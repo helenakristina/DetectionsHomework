@@ -1,4 +1,5 @@
 import logging
+import multiprocessing
 import sys
 import timeit
 
@@ -10,7 +11,6 @@ import pandas as pd
 from result import Result
 
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.INFO)
-NUM_THREADS = 8
 
 
 def parse_file(path: str) -> pd.DataFrame:
@@ -50,8 +50,9 @@ def main(files: list) -> None:
         exit(0)
 
     result = Result()
-    result.num_threads = NUM_THREADS
-    client = dask.distributed.Client(nthreads=NUM_THREADS)
+    cpu_count = multiprocessing.cpu_count()
+    result.num_threads = cpu_count if cpu_count < len(files) else len(files)
+    client = dask.distributed.Client(nthreads=result.num_threads)
 
     try:
         start = timeit.default_timer()
