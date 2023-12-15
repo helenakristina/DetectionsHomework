@@ -9,7 +9,6 @@ import pandas as pd
 
 from result import Result
 
-
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.INFO)
 NUM_THREADS = 8
 
@@ -19,20 +18,23 @@ def parse_file(path: str) -> pd.DataFrame:
     Will return None if file does not conform to desired format.
 
     Args:
-        path (str): File to parse. Accepts http(s), local file system,
-        hdfs, s3, or gcs file paths
+        path (str): File to parse. Accepts http(s) or local file system paths
 
     Returns:
         pd.DataFrame: Dataframe if file can be parsed, None if not
     """
+
     try:
         df = pd.read_csv(path, skipinitialspace=True)
+
     except Exception:
         logging.info(f"File failed: {path}")
         return None
+
     if "fname" not in df.columns:
         logging.info(f"File failed: {path}")
         return None
+
     return df
 
 
@@ -42,9 +44,11 @@ def main(files: list) -> None:
     Args:
         files (list): List of file paths to parse
     """
+
     if not files:
         logging.info("No files to parse.")
         exit(0)
+
     result = Result()
     result.num_threads = NUM_THREADS
     client = dask.distributed.Client(nthreads=NUM_THREADS)
@@ -64,8 +68,10 @@ def main(files: list) -> None:
 
         median = ddf["age"].compute().median()
         result.median_age = median
+
         average = ddf["age"].mean().compute()
         result.average_age = average
+
         median_record = ddf.query(f"age == {median}").compute().iloc[0]
         if not median_record.empty:
             result.median_record_fname = median_record["fname"]
