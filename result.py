@@ -17,7 +17,7 @@ class Result:
     num_threads: int = 0
 
     def get_median_record_str(self) -> str:
-        """_summary_
+        """String describing the median record where available
 
         Returns:
             str: Description of median record, if found.

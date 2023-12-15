@@ -37,7 +37,7 @@ def parse_file(path: str) -> pd.DataFrame:
 
 
 def main(files: list) -> None:
-    """_summary_
+    """Main function orchestrates distributed computation on files
 
     Args:
         files (list): List of file paths to parse
