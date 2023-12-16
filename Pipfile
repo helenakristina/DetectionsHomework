@@ -4,11 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-requests = "*"
-dask = "*"
 pandas = "*"
-distributed = "*"
-aiohttp = "*"
+ruff = "*"
+dask = {extras = ["distributed"], version = "*"}
 
 [dev-packages]
 

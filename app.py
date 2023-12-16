@@ -5,7 +5,7 @@ import timeit
 
 import dask
 import dask.distributed
-import dask.dataframe as dd
+import dask.dataframe
 import pandas as pd
 
 from result import Result
@@ -27,7 +27,7 @@ def parse_file(path: str) -> pd.DataFrame:
     try:
         df = pd.read_csv(path, skipinitialspace=True)
 
-    except Exception:
+    except ValueError:
         logging.info(f"File failed: {path}")
         return None
 
@@ -54,38 +54,33 @@ def main(files: list) -> None:
     result.num_threads = cpu_count if cpu_count < len(files) else len(files)
     client = dask.distributed.Client(nthreads=result.num_threads)
 
-    try:
-        start = timeit.default_timer()
+    start = timeit.default_timer()
 
-        futures = client.map(parse_file, files)
-        dask.distributed.wait(futures)
+    futures = client.map(parse_file, files)
+    dask.distributed.wait(futures)
 
-        non_null_futures = [f for f in futures if f.type != type(None)]
-        if non_null_futures:
-            ddf = dask.dataframe.from_delayed(non_null_futures)
-        else:
-            logging.warning("No valid records were read.")
-            exit(0)
-
-        median = ddf["age"].compute().median()
-        result.median_age = median
-
-        average = ddf["age"].mean().compute()
-        result.average_age = average
-
-        median_record = ddf.query(f"age == {median}").compute().iloc[0]
-        if not median_record.empty:
-            result.median_record_fname = median_record["fname"]
-            result.median_record_lname = median_record["lname"]
-
-        stop = timeit.default_timer()
-        result.elapsed_sec = stop - start
-
-        logging.info(result)
-
-    except Exception as err:
-        logging.error(err)
+    non_null_futures = [f for f in futures if f.type != type(None)]
+    if non_null_futures:
+        ddf = dask.dataframe.from_delayed(non_null_futures)
+    else:
+        logging.warning("No valid records were read.")
         exit(1)
+
+    median = ddf["age"].compute().median()
+    result.median_age = median
+
+    average = ddf["age"].mean().compute()
+    result.average_age = average
+
+    median_record = ddf.query(f"age == {median}").compute().iloc[0]
+    if not median_record.empty:
+        result.median_record_fname = median_record["fname"]
+        result.median_record_lname = median_record["lname"]
+
+    stop = timeit.default_timer()
+    result.elapsed_sec = stop - start
+
+    logging.info(result)
 
 
 if __name__ == "__main__":
