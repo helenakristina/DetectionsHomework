@@ -5,10 +5,10 @@ name = "pypi"
 
 [packages]
 pandas = "*"
-ruff = "*"
 dask = {extras = ["distributed"], version = "*"}
 
 [dev-packages]
+ruff = "*"
 
 [requires]
 python_version = "3.11"
