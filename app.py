@@ -8,7 +8,8 @@ import dask.distributed
 import dask.dataframe
 import pandas as pd
 
-from result import Result
+from dask.diagnostics import ResourceProfiler, Profiler
+
 
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.INFO)
 
@@ -49,15 +50,18 @@ def main(files: list) -> None:
         logging.info("No files to parse.")
         exit(0)
 
-    result = Result()
     cpu_count = multiprocessing.cpu_count()
-    result.num_threads = cpu_count if cpu_count < len(files) else len(files)
-    client = dask.distributed.Client(nthreads=result.num_threads)
+    num_threads = cpu_count if cpu_count < len(files) else len(files)
+    client = dask.distributed.Client(nthreads=num_threads)
 
-    start = timeit.default_timer()
+    with Profiler() as prof, ResourceProfiler(dt=0.25) as rprof:
+        futures = client.map(parse_file, files)
+        dask.distributed.wait(futures)
 
-    futures = client.map(parse_file, files)
-    dask.distributed.wait(futures)
+    logging.info(f"Processed files using {num_threads} threads")
+
+    print(prof.results)
+    print(rprof.results)
 
     non_null_futures = [f for f in futures if f.type != type(None)]
     if non_null_futures:
@@ -67,20 +71,17 @@ def main(files: list) -> None:
         exit(1)
 
     median = ddf["age"].compute().median()
-    result.median_age = median
-
     average = ddf["age"].mean().compute()
-    result.average_age = average
 
     median_record = ddf.query(f"age == {median}").compute().iloc[0]
     if not median_record.empty:
-        result.median_record_fname = median_record["fname"]
-        result.median_record_lname = median_record["lname"]
+        median_record_fname = median_record["fname"]
+        median_record_lname = median_record["lname"]
 
-    stop = timeit.default_timer()
-    result.elapsed_sec = stop - start
-
-    logging.info(result)
+    logging.info(
+        f"The average age is {average} years and The median age is {median} years."
+        f"A median record is {median_record_fname} {median_record_lname}"
+    )
 
 
 if __name__ == "__main__":
