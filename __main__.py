@@ -58,7 +58,7 @@ def main(files: list) -> None:
     dask.distributed.progress(futures)
     stop = timeit.default_timer()
     logging.info(
-        f"Processed {len(files)} files using {num_threads} threads in {stop-start} seconds."
+        f"Processed {len(files)} file(s) using {num_threads} threads in {stop-start} seconds."
     )
 
     non_null_futures = [f for f in futures if f.type != type(None)]
@@ -75,12 +75,13 @@ def main(files: list) -> None:
         f"The average age is {average} years and The median age is {median} years."
     )
 
-    median_record = ddf.query(f"age == {median}").compute().iloc[0]
-    if not median_record.empty:
+    median_records = ddf.query(f"age == {median}").compute()
+    if not median_records.empty:
+        median_record = median_records.iloc[0]
         median_record_fname = median_record["fname"]
         median_record_lname = median_record["lname"]
 
-        logging.info(f"A median record is {median_record_fname} {median_record_lname}")
+        logging.info(f"A median record is {median_record_fname} {median_record_lname}.")
     else:
         logging.info("No median record found.")
 
