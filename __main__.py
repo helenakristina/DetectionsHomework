@@ -11,7 +11,7 @@ import pandas as pd
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.INFO)
 
 
-def parse_file(path: str) -> pd.DataFrame:
+def parse_file(path: str) -> pd.DataFrame | None:
     """Function to parse a single file with graceful failures.
     Will return None if file does not conform to desired format.
 

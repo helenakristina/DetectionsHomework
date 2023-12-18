@@ -7,6 +7,7 @@ This solution requires pipenv to run. Install pipenv with the following command
 ```
 pip install --user pipenv
 ```
+
 Note: Alternatively, pipenv can be installed using Homebrew on Mac, but the documentation suggests using pip whenever possible.
 
 Navigate to the root folder of this repository in the terminal and run the code with the following command:
@@ -35,6 +36,7 @@ Dask uses distributed DataFrames similar to those in the popular Python library 
 </ol>
 
 ## Testing
+
 During development, I debugged and tested using the provided test files through both the file system as well as https by hosting them on my Github repo and accessing the raw files.
 
 I tested running the program without any arguments, running with only bad file(s), running it with some good and some bad files. Because the largest file provided was only 10,000 records, I also wanted to test it with a larger dataset.
@@ -44,8 +46,9 @@ I also used the Python faker library to generate random datasets for testing.
 I generated a file with a million records and processed it twenty times for testing.
 
 The output was as follows:
+
 ```
- DetectionsHomework git:(main) ✗ pipenv run python . data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv 
+ DetectionsHomework git:(main) ✗ pipenv run python . data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv data/fake_million.csv
 INFO:Processed 20 file(s) using 12 threads in 0.36238343198783696 seconds.
 INFO:The average age is 49.988716 years and The median age is 50.0 years.
 INFO:A median record is Jacob Rogers.ß
@@ -55,11 +58,11 @@ I also used Pandas to read the csv files and verify that the mean and median wer
 
 I then tested the rare case where there is no median record using the file `data/fake_ten.csv` (included in repo).
 
-```  
+```
 DetectionsHomework git:(main) ✗ pipenv run python . data/fake_ten.csv
 INFO:Processed 1 file(s) using 1 threads in 0.059239980997517705 seconds.
 INFO:The average age is 53.5 years and The median age is 46.5 years.
-INFO:No median record found. 
+INFO:No median record found.
 ```
 
 ## Design Decisions
@@ -87,13 +90,14 @@ I made an assumption that the timeit module was sufficient for measuring the clo
 ### How would I change my program if it had to process many files where each file was over 10M Records?
 
 In this case, I would definitely use the Dask `read_csv` function as well as looking at splitting the file into chunks like this <a href="https://stackoverflow.com/questions/65890030/how-to-split-a-large-csv-file-using-dask/65944272#65944272">Stack Overflow link </a>.
-I would also spin up an HPC cluster of some kind to do the computations. Because the median needs all values to compute, I would also make a case for using the approximate median from Dask instead of the exact median, depending on the use case for requiring the median.
+I would also spin up a cluster of some kind to do the computations. Because the median needs all values to compute, I would also make a case for using the approximate median from Dask instead of the exact median, depending on the use case for requiring the median.
 
 ### How would I change my program if it had to process data from more than 20k URLS?
 
-The nice thing about Dask (and one reason I chose it) is that the same code could run on an HPC cluster as my local machine. I would also play around with the number of threads as well as processes to find the optimal compute power.
+The nice thing about Dask (and one reason I chose it) is that the same code could run on a cluster as my local machine. I would also play around with the number of threads as well as processes to find the optimal compute power.
 
 ### How would I test my code for production use at scale?
+
 I would start by increasing my logging to include development logs for testing in a development environment.
 
 I would then generate a lot of data to do integration and load tests at scale. I would add those to the CI/CD pipeline so that the containerized image would verify that nothing breaks on each commit.
