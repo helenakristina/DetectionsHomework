@@ -61,8 +61,7 @@ def main(files: list) -> None:
         f"Processed {len(files)} file(s) using {num_threads} threads in {stop-start} seconds."
     )
 
-    non_null_futures = [f for f in futures if f.type != type(None)]
-    if non_null_futures:
+    if non_null_futures := [f for f in futures if f.type != type(None)]:
         ddf = dask.dataframe.from_delayed(non_null_futures)
     else:
         logging.warning("No valid records were read.")
